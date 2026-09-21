@@ -60,6 +60,13 @@ def gen_merkle_proof(leaves, pos):
         #######     to hash internal nodes in the tree use the    ######
         #######     function hash_internal_node(left,right)       ######
 
+        # Add the sibling at this level, then build the parent level.
+        hashes.append(state[level_pos ^ 1])
+        for i in range(0, len(state), 2):
+            new_state.append(hash_internal_node(state[i], state[i + 1]))
+        state = new_state
+        level_pos >>= 1
+
     # Returns list of hashes that make up the Merkle Proof
     return hashes
     
@@ -86,6 +93,5 @@ if __name__ == "__main__":
 
     print('I generated a Merkle proof for leaf #{} in file {}\n'.format(pos,merkle_proof_file))
     sys.exit(0)
-
 
 
