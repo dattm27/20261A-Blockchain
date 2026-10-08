@@ -1,0 +1,17 @@
+The coinExchangeScript has two spending branches. In the first branch, the
+recipient must provide a secret whose HASH160 value matches the committed hash
+and must also provide a valid recipient signature. In the second branch, both
+the sender and recipient must sign. The corresponding scriptSigs select the
+appropriate branch and provide exactly the values that branch consumes.
+
+The hash-locked branch connects the two chains. Alice initially reveals only
+H(x). When she spends Bob's BCY output, x becomes public, allowing Bob to spend
+Alice's BTC output with the same secret. Before either swap output is published,
+the parties cooperatively sign time-locked refund transactions that use the
+two-signature branch.
+
+If Bob never redeems Alice's output, Alice can eventually broadcast the refund
+transaction that both parties signed in advance. A simple 1-of-2 multisig is
+insufficient because either party could immediately take the funds without
+revealing x, so the redemption on one chain would not securely enable the
+corresponding redemption on the other chain.
