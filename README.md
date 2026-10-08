@@ -13,17 +13,24 @@ Blockchain course.
 │   ├── merkle_utils.py           # Shared hashing and proof utilities
 │   ├── proof-for-leaf-95.txt     # Example proof
 │   └── proj1.pdf                 # Project instructions
+├── proj2/
+│   ├── Q1.py ... Q4.py           # Bitcoin Script exercises
+│   ├── alice.py, bob.py, swap.py # Atomic swap simulation
+│   ├── lib/                       # Keys, configuration, and utilities
+│   ├── docs/                      # Transaction IDs and design notes
+│   └── tests/                     # Offline script tests
 ├── .gitignore
 └── README.md
 ```
 
-Currently, the repository contains only Project 1, which implements Merkle tree
-inclusion proofs in Python.
+Project 1 implements Merkle tree inclusion proofs. Project 2 builds and verifies
+Bitcoin transactions and a cross-chain atomic swap with `python-bitcoinlib`.
 
 ## Requirements
 
 - Python 3
-- No third-party packages are required
+- Project 1 has no third-party dependencies
+- Project 2 dependencies are listed in `proj2/requirements.txt`
 
 ## Running Project 1
 
@@ -31,4 +38,15 @@ inclusion proofs in Python.
 cd proj1
 python3 prover.py 683
 python3 verifier.py 683
+```
+
+## Testing Project 2
+
+```bash
+cd proj2
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m lib.setup_keys  # only on a fresh clone; creates ignored local keys
+python -m unittest discover -s tests -v
 ```
