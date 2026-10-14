@@ -3,8 +3,35 @@
 This repository contains programming projects and exercises for the 20261A
 Blockchain course.
 
-- [Course materials and learning roadmap](COURSE_MATERIALS.md)
 - [Homework 1 - complete explained solution](hw1/README.md)
+
+## Course Materials
+
+Lộ trình sử dụng bài giảng và bài tập của
+[Stanford CS251 - Cryptocurrencies and Blockchain Technologies (Fall 2023)](https://securitylab.github.io/cs251-fall23/).
+Ngày học bên dưới là lịch của lớp 20261A; hạn nộp ghi trong tài liệu Stanford
+không phải hạn nộp của lớp.
+
+| Bài | Ngày | Chủ đề | Bài giảng | Bài tập / dự án |
+| --- | --- | --- | --- | --- |
+| 1 | 17/9 | Intro to cryptography \& cryptocurrencies | [PDF](https://cs251.stanford.edu/lectures/lecture1.pdf) · [PPTX](https://cs251.stanford.edu/lectures/lecture1.pptx) | Project 1 — Merkle trees in Python: [instructions](https://securitylab.github.io/cs251-fall23/hw/proj1.pdf) · [starter code](https://securitylab.github.io/cs251-fall23/hw/proj1.zip) |
+| 2 | 18/9 | Bitcoin nuts and bolts | [PDF](https://cs251.stanford.edu/lectures/lecture2.pdf) · [PPTX](https://cs251.stanford.edu/lectures/lecture2.pptx) | Homework 1: [instructions](https://securitylab.github.io/cs251-fall23/hw/hw1.pdf) · [lời giải trong repository](hw1/README.md) |
+| 3 | 1/10 | Wallets: managing and protecting crypto assets | [PDF](https://cs251.stanford.edu/lectures/lecture3.pdf) · [PPTX](https://cs251.stanford.edu/lectures/lecture3.pptx) | Project 2 — Bitcoin transactions with `python-bitcoinlib`: [instructions](https://securitylab.github.io/cs251-fall23/hw/proj2.pdf) · [starter code](https://securitylab.github.io/cs251-fall23/hw/proj2.zip) |
+| 4 | 14/10 | Ethereum: DApps, EVM and the Ethereum blockchain | [PDF](https://cs251.stanford.edu/lectures/lecture7.pdf) · [PPTX](https://cs251.stanford.edu/lectures/lecture7.pptx) | — |
+| 5 | 16/10 | Programming in Solidity | [PDF](https://cs251.stanford.edu/lectures/lecture8.pdf) · [PPTX](https://cs251.stanford.edu/lectures/lecture8.pptx) | Project 3 — An Ethereum payment app: [instructions](https://securitylab.github.io/cs251-fall23/hw/proj3.pdf) · [starter code](https://securitylab.github.io/cs251-fall23/hw/proj3.zip) |
+| 6 | 28/10 | Stablecoins and lending protocols | [PDF](https://cs251.stanford.edu/lectures/lecture9.pdf) · [PPTX](https://cs251.stanford.edu/lectures/lecture9.pptx) | — |
+| 7 | Tự học | Decentralized exchanges | [PDF](https://cs251.stanford.edu/lectures/lecture10.pdf) · [PPTX](https://cs251.stanford.edu/lectures/lecture10.pptx) | Homework 3: [instructions](https://securitylab.github.io/cs251-fall23/hw/hw3.pdf). Project 4 — Building a DEX: [instructions](https://securitylab.github.io/cs251-fall23/hw/proj4.pdf) · [starter code](https://securitylab.github.io/cs251-fall23/hw/proj4.zip) |
+| 8 | Tự học | Maximal Extractable Value (MEV) | [PDF](https://cs251.stanford.edu/lectures/lecture11.pdf) · [PPTX](https://cs251.stanford.edu/lectures/lecture11.pptx) | — |
+
+### Mạch kiến thức
+
+1. **Nền tảng mật mã:** hàm băm, chữ ký số, proof of work và Merkle tree.
+2. **Bitcoin:** giao dịch, UTXO, Bitcoin Script, ví và quản lý khóa.
+3. **Ethereum:** tài khoản, EVM, DApp và smart contract bằng Solidity.
+4. **DeFi:** stablecoin, lending, automated market maker và DEX.
+5. **Cơ chế thị trường:** thứ tự giao dịch, front-running và MEV.
+
+Tài liệu chi tiết cũng được lưu tại [COURSE_MATERIALS.md](COURSE_MATERIALS.md).
 
 ## Project Structure
 
