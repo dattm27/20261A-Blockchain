@@ -31,7 +31,7 @@
 
 \geometry{top=2.2cm,bottom=2.2cm,left=2.5cm,right=2.5cm}
 \setlength{\parindent}{0pt}
-\setlength{\parskip}{0.55em}
+\setlength{\parskip}{0.15em}
 \setlist[itemize]{leftmargin=1.6em,itemsep=0.25em,topsep=0.3em}
 \setlist[enumerate]{leftmargin=1.8em,itemsep=0.3em,topsep=0.3em}
 
@@ -75,7 +75,7 @@
 }
 
 \newenvironment{summarybox}
-  {\begin{quote}\small\color{darkgray}\textbf{Tóm tắt đề.}\;}
+  {\begin{quote}\footnotesize\color{darkgray}\textbf{Đề bài.}\;\itshape}
   {\end{quote}}
 
 \newcommand{\solution}{\subsection*{Bài làm}}
@@ -124,9 +124,23 @@
 \problem{1}{Hàm proof of work không an toàn}
 
 \begin{summarybox}
-Xét $H(x,y)=\operatorname{SHA256}(x\oplus y)$ và độ khó $D$ đã biết trước.
-Chứng minh kẻ tấn công có thể chuẩn bị phần lớn công việc trước khi thử thách
-$x$ được công bố, rồi tìm nghiệm $y$ gần như tức thời.
+\textbf{Problem 1. A broken proof of work hash function.}
+In class we discussed using a hash function
+$H:X\times Y\to\{0,1,\ldots,2^n-1\}$ for a proof of work scheme. Once an
+$x\in X$ and a difficulty level $D$ are published, it should take an expected
+$D$ evaluations of the hash function to find a $y\in Y$ such that
+$H(x,y)<2^n/D$. Suppose that $X=Y=\{0,1\}^m$ for some $m$ (say $m=512$),
+and consider the hash function
+\[
+  H:X\times Y\to\{0,1,\ldots,2^{256}-1\}
+  \quad\text{defined as}\quad
+  H(x,y):=\operatorname{SHA256}(x\oplus y).
+\]
+Here $\oplus$ denotes a bit-wise xor. Show that this $H$ is insecure as a
+proof of work hash. In particular, suppose $D$ is fixed ahead of time. Show
+that a clever attacker can find a solution $y\in Y$ with minimal effort once
+$x\in X$ is published. Hint: the attacker will do most of the work before $x$
+is published.
 \end{summarybox}
 
 \solution
@@ -176,9 +190,26 @@ $H$ không an toàn để dùng làm proof of work.
 \problem{2}{Cây Merkle \texorpdfstring{$k$}{k}-phân}
 
 \begin{summarybox}
-Mở rộng Merkle tree nhị phân thành cây mà mỗi nút trong có tối đa $k$ nút con.
-Xây commitment tam phân cho $S=(T_1,\ldots,T_9)$, chứng minh $T_4\in S$, tính
-độ dài bằng chứng tổng quát và so sánh cây nhị phân với cây tam phân.
+\textbf{Problem 2. Beyond binary Merkle trees.}
+Alice can use a binary Merkle tree to commit to a list of elements
+$S=(T_1,\ldots,T_n)$ so that later she can prove to Bob that $S[i]=T_i$ using
+an inclusion proof containing at most $\lceil\log_2 n\rceil$ hash values. The
+binding commitment to $S$ is a single hash value. In this question your goal
+is to explain how to do the same using a $k$-ary tree, that is, where every
+non-leaf node has up to $k$ children. The hash value for every non-leaf node
+is computed as the hash of the concatenation of the values of all its
+children.
+
+\begin{enumerate}[label=\alph*.,leftmargin=1.5em]
+  \item Suppose $S=(T_1,\ldots,T_9)$. Explain how Alice computes a commitment
+        to $S$ using a ternary Merkle tree (i.e., $k=3$). How does Alice later
+        prove to Bob that $T_4$ is in $S$? What values are provided in the
+        proof?
+  \item Suppose $S$ contains $n$ elements. What is the length of the proof
+        that proves that $S[i]=T_i$, as a function of $n$ and $k$?
+  \item For large $n$, if we want to minimize the proof size, is it better to
+        use a binary or a ternary tree? Why?
+\end{enumerate}
 \end{summarybox}
 
 \solution
@@ -275,9 +306,29 @@ nhưng số hash anh em ở mỗi tầng lại tăng tuyến tính theo $k-1$.
 \problem{3}{Bitcoin Script và mật khẩu}
 
 \begin{summarybox}
-Một UTXO dùng hashlock mật khẩu với script được in trong đề là
-\texttt{OP\_SHA256 <eb27...f69b> OP\_EQUAL}. Viết dữ liệu mở khóa và phân tích
-rủi ro với mật khẩu ngắn cũng như passphrase mạnh.
+\textbf{Problem 3. Bitcoin script.}
+Alice is on a backpacking trip and is worried about her devices containing
+private keys getting stolen. She wants to store her bitcoins in such a way
+that they can be redeemed via knowledge of a password $P$. Accordingly, she
+stores them in the following ScriptPubKey address:
+\begin{center}
+\normalfont\ttfamily
+OP\_SHA256\\
+<0xeb271cbcc2340d0b0e6212903e29f22e578ff69b>\\
+OP\_EQUAL
+\end{center}
+\begin{enumerate}[label=\alph*.,leftmargin=1.5em]
+  \item Write a ScriptSig script that will successfully redeem this UTXO
+        given the password $P$. Hint: it should only be one line long.
+  \item Suppose Alice chooses a six character password $P$. Explain why her
+        bitcoins can be stolen soon after her UTXO is posted to the
+        blockchain. You may assume that computing SHA256 of all six character
+        passwords can be done in reasonable time.
+  \item Suppose Alice chooses a strong 30 character passphrase $P$. Is the
+        ScriptPubKey above a secure way to protect her bitcoins? Why or why
+        not? Hint: reason through what happens when she tries to redeem her
+        bitcoins.
+\end{enumerate}
 \end{summarybox}
 
 \solution
@@ -328,9 +379,37 @@ Do đó, cần kết hợp hashlock với điều kiện chữ ký như \texttt{
 \problem{4}{BitcoinLotto}
 
 \begin{summarybox}
-Thiết kế jackpot Bitcoin sao cho vé thắng không thể nhận giải trước cuối tuần,
-đồng thời jackpot chưa nhận của các tuần trước có thể chuyển cho người thắng
-tuần sau mà không trao thêm quyền biển thủ cho ban tổ chức.
+\textbf{Problem 4. BitcoinLotto:}
+Suppose the nation of Bitcoinia decides to convert its national lottery to use
+Bitcoin. A trusted scratch-off ticket printing factory exists and will not
+keep records of any values printed. Bitcoinia proposes a simple design: a
+weekly public address is published that holds the jackpot. This allows
+everyone to verify that the jackpot exists, namely there is a UTXO bound to
+that address that holds the jackpot amount. Then a weekly run of tickets is
+printed so that the winning lottery ticket contains the correct private key
+under the scratch material.
+
+\begin{enumerate}[label=\alph*.,leftmargin=1.5em]
+  \item If the winner finds the ticket on Monday and immediately claims the
+        jackpot, this will be bad for sales because players will all realize
+        the lottery has been won. Modify the design to use one of the locktime
+        opcodes to ensure that the prize can only be claimed at the end of the
+        week. (of course, you cannot prevent the winner from proving ownership
+        of the correct private key outside of Bitcoin). The Bitcoin script
+        opcodes are listed at {\normalfont\url{https://en.bitcoin.it/wiki/Script}}.
+        Alternatively, explain how to use a 2-out-of-2 multisig for this. You
+        only need to write up one design: either using locktime or multisig.
+  \item Some tickets inevitably get lost or destroyed. Modify the design to
+        roll forward so that any unclaimed jackpot from Week $n$ can be
+        claimed by the winner in Week $n+1$. If the Week $n+1$ jackpot is
+        unclaimed, then the jackpot from both weeks $n$ and $n+1$ can be
+        claimed by the winner of Week $n+2$, and so on. Can you propose a
+        design that works without introducing new ways for the lottery
+        administrators to embezzle funds beyond what is possible on the basic
+        scheme described at the beginning of the question? You may assume that
+        the lottery system runs for 1000 weeks, and then shuts down
+        permanently. Hint: use multisig.
+\end{enumerate}
 \end{summarybox}
 
 \solution
@@ -381,9 +460,27 @@ hiện đại hơn.
 \problem{5}{Lightweight client}
 
 \begin{summarybox}
-Bob chỉ giữ block header ở head hiện tại. Xác định dữ liệu Alice phải gửi để
-chứng minh giao dịch thanh toán nằm trong một block tổ tiên, rồi tính kích thước
-bằng chứng khi block đó cách head $k$ block và mỗi block có $n$ giao dịch.
+\textbf{Problem 5. Lightweight clients:}
+Suppose Bob runs an ultra lightweight Bitcoin client which receives the
+current head of the blockchain from a trusted source. This client has very
+limited memory and so it only stores the block header of the most recent block
+in the chain (the head of the chain), deleting any previous block headers.
+
+\begin{enumerate}[label=\alph*.,leftmargin=1.5em]
+  \item Consider the current blockchain design, where every block header
+        contains (i) a Merkle root of all the transaction in the block, and
+        (ii) the hash of the previous block header. Suppose Alice posts a
+        transaction on chain that sends a payment to Bob. Some time later
+        Alice want to prove to Bob that she paid him. Bob runs an ultra
+        lightweight client, and only has the latest block header. What
+        information should Alice send to Bob to prove that her payment to Bob
+        has been included in a block on chain?
+  \item Assume Alice's payment was included in a block $k$ blocks before the
+        current head and there are exactly $n$ transactions per block.
+        Estimate how many bytes this proof will require in terms of $n$ and
+        $k$. Compute the proof size for $k=6$ and $n=1024$, assuming SHA256 is
+        used as the hash function throughout.
+\end{enumerate}
 \end{summarybox}
 
 \solution
