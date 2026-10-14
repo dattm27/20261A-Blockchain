@@ -1,0 +1,118 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+\usepackage{microtype}
+
+\setmainfont{Times New Roman}[
+  Path=/System/Library/Fonts/Supplemental/,
+  UprightFont=Times New Roman.ttf,
+  BoldFont=Times New Roman Bold.ttf,
+  ItalicFont=Times New Roman Italic.ttf,
+  BoldItalicFont=Times New Roman Bold Italic.ttf
+]
+\setsansfont{Arial}[
+  Path=/System/Library/Fonts/Supplemental/,
+  UprightFont=Arial.ttf,
+  BoldFont=Arial Bold.ttf,
+  ItalicFont=Arial Italic.ttf,
+  BoldItalicFont=Arial Bold Italic.ttf
+]
+\setmonofont{Menlo}[Path=/System/Library/Fonts/,UprightFont=Menlo.ttc,Scale=0.84]
+
+\geometry{top=2.2cm,bottom=2.2cm,left=2.5cm,right=2.5cm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.15em}
+\setlist[itemize]{leftmargin=1.6em,itemsep=0.25em,topsep=0.3em}
+\setlist[enumerate]{leftmargin=1.8em,itemsep=0.3em,topsep=0.3em}
+
+\definecolor{navy}{HTML}{17365D}
+\definecolor{darkgray}{HTML}{444444}
+\definecolor{codebg}{HTML}{F5F7F9}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=navy,
+  urlcolor=navy,
+  pdftitle={Homework 1 - Problem 3},
+  pdfauthor={Nhom 12 - R2R}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{14pt}
+\fancyhead[L]{\small 20261A - Blockchain}
+\fancyhead[R]{\small Nhóm 12 - R2R}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\lstdefinestyle{bitcoin}{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{darkgray!35},
+  framesep=7pt,
+  aboveskip=0.8em,
+  belowskip=0.8em,
+  columns=fullflexible,
+  keepspaces=true
+}
+
+\newcommand{\problem}[2]{%
+  \clearpage
+  \section*{\color{navy}Bài #1. #2}
+}
+
+\newenvironment{summarybox}
+  {\begin{quote}\footnotesize\color{darkgray}\textbf{Đề bài.}\;\itshape}
+  {\end{quote}}
+
+\newcommand{\solution}{\subsection*{Bài làm}}
+
+\begin{document}
+
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+  \centering
+  {\large\sffamily HỌC PHẦN 20261A - BLOCKCHAIN\par}
+  \vspace{1.8cm}
+  {\color{navy}\rule{0.88\textwidth}{1.2pt}\par}
+  \vspace{0.65cm}
+  {\Huge\bfseries BÀI TẬP VỀ NHÀ SỐ 1\par}
+  \vspace{0.35cm}
+  {\Large Bài 3 - Bitcoin Script và mật khẩu\par}
+  \vspace{0.65cm}
+  {\color{navy}\rule{0.88\textwidth}{1.2pt}\par}
+
+  \vfill
+
+  \begin{tabular}{>{\bfseries}l l l}
+    \toprule
+    Nhóm & Họ và tên & Mã học viên \\
+    \midrule
+    12 - R2R & Trần Mạnh Đạt & 20252607M \\
+              & Trần Hoàng Sơn & 20252606M \\
+              & Nguyễn Đức Hoàng & 20252603M \\
+    \bottomrule
+  \end{tabular}
+
+  \vfill
+  {\large Ngày 14 tháng 10 năm 2026\par}
+  \vspace{0.8cm}
+  {\small Tài liệu gốc: Stanford CS251 - Assignment \#1 (Fall 2023)\par}
+\end{titlepage}
+
+\hypersetup{pageanchor=true}
+\pagenumbering{arabic}
+
+\input{problem3-content.tex}
+
+\end{document}

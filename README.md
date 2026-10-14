@@ -51,9 +51,12 @@ Tài liệu chi tiết cũng được lưu tại [COURSE_MATERIALS.md](COURSE_MA
 │   └── tests/                     # Offline script tests
 ├── hw1/
 │   ├── README.md                  # Explained solutions for Homework 1
-│   └── homework1.tex              # LaTeX source for the submission PDF
+│   ├── homework1.tex              # LaTeX source for the full submission PDF
+│   ├── homework1_problem3.tex     # Standalone LaTeX source for Problem 3
+│   └── problem3-content.tex       # Shared Problem 3 statement and solution
 ├── output/pdf/
-│   └── Homework1_Nhom12.pdf       # Compiled Homework 1 submission
+│   ├── Homework1_Nhom12.pdf       # Compiled full Homework 1 submission
+│   └── Homework1_Bai3_Nhom12.pdf  # Standalone Problem 3 submission
 ├── COURSE_MATERIALS.md            # Lecture, homework, and project links
 ├── .gitignore
 └── README.md

@@ -4,6 +4,8 @@
 
 - Nguồn LaTeX để biên dịch bản nộp: [`homework1.tex`](homework1.tex)
 - Bản PDF đã biên dịch: [`../output/pdf/Homework1_Nhom12.pdf`](../output/pdf/Homework1_Nhom12.pdf)
+- Nguồn LaTeX chỉ gồm Bài 3: [`homework1_problem3.tex`](homework1_problem3.tex)
+- Bản PDF chỉ gồm Bài 3: [`../output/pdf/Homework1_Bai3_Nhom12.pdf`](../output/pdf/Homework1_Bai3_Nhom12.pdf)
 
 Biên dịch bằng XeLaTeX (chạy hai lần để cập nhật mục lục):
 
@@ -196,14 +198,40 @@ hex, tức 20 byte. Hai byte-string khác độ dài không thể bằng nhau, n
 
 Các câu trả lời dưới đây dùng phiên bản đã sửa đó.
 
-### a. ScriptSig
+### a. ScriptSig và vị trí trong giao dịch
 
 ```text
 <P>
 ```
 
-`ScriptSig` chỉ đẩy chính byte-string mật khẩu lên stack. `ScriptPubKey` băm
-nó và so sánh với digest đã cam kết. Không cần public key hay chữ ký số.
+Đây chỉ là dữ liệu mở khóa trong input của giao dịch chi tiêu, không phải toàn
+bộ transaction. `ScriptPubKey` chứa hashlock nằm trong output của giao dịch
+cấp tiền trước đó:
+
+```text
+Funding transaction (giao dịch trước)
+└─ Output:
+   ├─ value: số bitcoin
+   └─ ScriptPubKey: OP_SHA256 <h> OP_EQUAL
+
+Spending transaction (giao dịch mới)
+├─ Input:
+│  ├─ outpoint: <funding_txid>:<output_index>
+│  └─ ScriptSig: <P>
+└─ Output:
+   ├─ value: số bitcoin muốn chuyển
+   └─ ScriptPubKey: điều kiện khóa của người nhận
+```
+
+Với (h=SHA256(P)) trong phiên bản đã sửa, node lấy `<P>` từ input rồi ghép
+nó với `ScriptPubKey` của UTXO cũ:
+
+```text
+<P> → OP_SHA256 → SHA256(P) → so sánh với h → TRUE
+```
+
+Vì vậy, đáp án một dòng vẫn là `<P>`. Phần bổ sung trên làm rõ hai script nằm
+trong hai giao dịch khác nhau và node kiểm tra chúng như thế nào.
 
 ### b. Mật khẩu 6 ký tự
 
