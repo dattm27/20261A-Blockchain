@@ -2,6 +2,17 @@
 
 Đề gốc: [Stanford CS251, Assignment #1 (Fall 2023)](https://securitylab.github.io/cs251-fall23/hw/hw1.pdf).
 
+- Nguồn LaTeX để biên dịch bản nộp: [`homework1.tex`](homework1.tex)
+- Bản PDF đã biên dịch: [`../output/pdf/Homework1_Nhom12.pdf`](../output/pdf/Homework1_Nhom12.pdf)
+
+Biên dịch bằng XeLaTeX (chạy hai lần để cập nhật mục lục):
+
+```bash
+cd hw1
+xelatex -jobname=Homework1_Nhom12 -output-directory=../output/pdf homework1.tex
+xelatex -jobname=Homework1_Nhom12 -output-directory=../output/pdf homework1.tex
+```
+
 Lời giải dưới đây được viết lại độc lập. Hai bài tham khảo do nhóm khác cung
 cấp được dùng để đối chiếu Bài 1 và Bài 2; các lập luận, ký hiệu và phần kiểm
 tra lỗi đề đã được chuẩn hóa lại.

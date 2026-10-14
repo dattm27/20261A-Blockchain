@@ -23,7 +23,10 @@ Blockchain course.
 │   ├── docs/                      # Transaction IDs and design notes
 │   └── tests/                     # Offline script tests
 ├── hw1/
-│   └── README.md                  # Explained solutions for Homework 1
+│   ├── README.md                  # Explained solutions for Homework 1
+│   └── homework1.tex              # LaTeX source for the submission PDF
+├── output/pdf/
+│   └── Homework1_Nhom12.pdf       # Compiled Homework 1 submission
 ├── COURSE_MATERIALS.md            # Lecture, homework, and project links
 ├── .gitignore
 └── README.md
