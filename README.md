@@ -3,6 +3,8 @@
 This repository contains programming projects and exercises for the 20261A
 Blockchain course.
 
+- [Course materials and learning roadmap](COURSE_MATERIALS.md)
+
 ## Project Structure
 
 ```text
@@ -19,6 +21,7 @@ Blockchain course.
 │   ├── lib/                       # Keys, configuration, and utilities
 │   ├── docs/                      # Transaction IDs and design notes
 │   └── tests/                     # Offline script tests
+├── COURSE_MATERIALS.md            # Lecture, homework, and project links
 ├── .gitignore
 └── README.md
 ```
