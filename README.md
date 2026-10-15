@@ -53,7 +53,8 @@ Tài liệu chi tiết cũng được lưu tại [COURSE_MATERIALS.md](COURSE_MA
 │   ├── README.md                  # Explained solutions for Homework 1
 │   ├── homework1.tex              # LaTeX source for the full submission PDF
 │   ├── homework1_problem3.tex     # Standalone LaTeX source for Problem 3
-│   └── problem3-content.tex       # Shared Problem 3 statement and solution
+│   ├── problem3-content.tex       # Problem 3 content in the full submission
+│   └── problem3-submit-content.tex # Problem 3 standalone submission content
 ├── output/pdf/
 │   ├── Homework1_Nhom12.pdf       # Compiled full Homework 1 submission
 │   └── Homework1_Bai3_Nhom12.pdf  # Standalone Problem 3 submission
