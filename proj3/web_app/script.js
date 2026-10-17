@@ -1,7 +1,7 @@
 // =============================================================================
 //                                  Config
 // =============================================================================
-const provider = new ethers.providers.JsonRpcProvider("http://localhost:8545");
+const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
 var defaultAccount;
 
 // Constant we use later
