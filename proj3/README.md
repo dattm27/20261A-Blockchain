@@ -65,6 +65,36 @@ Thiết kế của lời giải phân chia trách nhiệm như sau:
 Nhờ vậy, việc tìm đường được thực hiện miễn phí ở client, còn các điều kiện ảnh
 hưởng tới số dư được contract kiểm chứng.
 
+## Cài đặt và kiểm thử
+
+Nên dùng Node.js 18 hoặc 20 LTS:
+
+```bash
+cd proj3
+npm install
+npm run compile
+npm test
+```
+
+`npm test` chạy cả unit test của contract và integration test của client trên
+một Hardhat node cục bộ. Integration test tự chọn cổng trống và tự dừng node.
+
+Để chạy giao diện, mở hai terminal:
+
+```bash
+# Terminal 1
+cd proj3
+npm run node
+
+# Terminal 2
+cd proj3
+npm run deploy
+```
+
+Sau đó mở `web_app/index.html` trong trình duyệt. Cấu hình mặc định dùng địa chỉ
+deploy đầu tiên trên một Hardhat node mới. Đây là môi trường học tập cục bộ;
+không dùng các tài khoản và private key mặc định của Hardhat trên mạng thật.
+
 ## File nộp
 
 Theo đề bài, chỉ nộp hai file:
