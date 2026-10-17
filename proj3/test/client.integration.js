@@ -1,21 +1,35 @@
 const assert = require("assert");
 const fs = require("fs");
+const net = require("net");
 const path = require("path");
 const vm = require("vm");
 const { spawn } = require("child_process");
 const ethers = require("ethers");
 
 const projectRoot = path.resolve(__dirname, "..");
-const rpcUrl = "http://127.0.0.1:8545";
+let rpcUrl;
+
+function getFreePort() {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const port = server.address().port;
+      server.close(() => resolve(port));
+    });
+  });
+}
 
 function waitForNode(process) {
   return new Promise((resolve, reject) => {
+    let output = "";
     const timeout = setTimeout(() => {
-      reject(new Error("Timed out waiting for the Hardhat node"));
+      reject(new Error(`Timed out waiting for the Hardhat node\n${output}`));
     }, 20000);
 
     function inspect(chunk) {
-      if (chunk.toString().includes("Started HTTP and WebSocket JSON-RPC server")) {
+      output += chunk.toString();
+      if (output.includes("Started HTTP and WebSocket JSON-RPC server")) {
         clearTimeout(timeout);
         resolve();
       }
@@ -25,7 +39,9 @@ function waitForNode(process) {
     process.stderr.on("data", inspect);
     process.once("exit", (code) => {
       clearTimeout(timeout);
-      reject(new Error(`Hardhat node exited before startup with code ${code}`));
+      reject(new Error(
+        `Hardhat node exited before startup with code ${code}\n${output}`
+      ));
     });
   });
 }
@@ -39,6 +55,21 @@ function makeJQueryStub() {
       val() { return ""; }
     };
   };
+}
+
+async function stopProcess(process) {
+  if (process.exitCode !== null) {
+    return;
+  }
+
+  await new Promise((resolve) => {
+    const forceStop = setTimeout(() => process.kill("SIGKILL"), 3000);
+    process.once("exit", () => {
+      clearTimeout(forceStop);
+      resolve();
+    });
+    process.kill("SIGTERM");
+  });
 }
 
 function loadClient(contractAddress) {
@@ -68,7 +99,11 @@ function loadClient(contractAddress) {
     "utf8"
   );
   clientSource = clientSource.replace(
-    'var contractAddress = "";',
+    /new ethers\.providers\.JsonRpcProvider\("[^"]+"\)/,
+    `new ethers.providers.JsonRpcProvider("${rpcUrl}")`
+  );
+  clientSource = clientSource.replace(
+    /var contractAddress = "[^"]*";/,
     `var contractAddress = "${contractAddress}";`
   );
   vm.runInContext(clientSource, context, { filename: "script.js" });
@@ -76,6 +111,8 @@ function loadClient(contractAddress) {
 }
 
 async function main() {
+  const rpcPort = await getFreePort();
+  rpcUrl = `http://127.0.0.1:${rpcPort}`;
   const hardhatCli = path.join(
     projectRoot,
     "node_modules",
@@ -84,10 +121,14 @@ async function main() {
     "cli",
     "cli.js"
   );
-  const nodeProcess = spawn(process.execPath, [hardhatCli, "node"], {
-    cwd: projectRoot,
-    stdio: ["ignore", "pipe", "pipe"]
-  });
+  const nodeProcess = spawn(
+    process.execPath,
+    [hardhatCli, "node", "--port", String(rpcPort)],
+    {
+      cwd: projectRoot,
+      stdio: ["ignore", "pipe", "pipe"]
+    }
+  );
 
   try {
     await waitForNode(nodeProcess);
@@ -143,7 +184,7 @@ async function main() {
 
     console.log("Client integration: all checks passed");
   } finally {
-    nodeProcess.kill("SIGTERM");
+    await stopProcess(nodeProcess);
   }
 }
 
