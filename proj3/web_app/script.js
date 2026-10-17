@@ -43,7 +43,7 @@ var contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 var BlockchainSplitwise = new ethers.Contract(contractAddress, abi, provider.getSigner());
 
 // =============================================================================
-//                            Functions To Implement
+//                              Client Functions
 // =============================================================================
 
 function normalizeAddress(address) {
@@ -54,7 +54,7 @@ async function getFunctionCalls(functionName) {
 	return getAllFunctionCalls(contractAddress, functionName);
 }
 
-// TODO: Return a list of all users (creditors or debtors) in the system
+// Return a list of all users (creditors or debtors) in the system
 // All users in the system are everyone who has ever sent or received an IOU
 async function getUsers() {
 	var calls = await getFunctionCalls("add_IOU");
@@ -68,7 +68,7 @@ async function getUsers() {
 	return Array.from(users);
 }
 
-// TODO: Get the total amount owed by the user specified by 'user'
+// Get the total amount owed by the user specified by 'user'
 async function getTotalOwed(user) {
 	var debtor = normalizeAddress(user);
 	var users = await getUsers();
@@ -81,7 +81,7 @@ async function getTotalOwed(user) {
 	}, 0);
 }
 
-// TODO: Get the last time this user has sent or received an IOU, in seconds since Jan. 1, 1970
+// Get the last time this user has sent or received an IOU, in seconds since Jan. 1, 1970
 // Return null if you can't find any activity for the user.
 // HINT: Try looking at the way 'getAllFunctionCalls' is written. You can modify it if you'd like.
 async function getLastActive(user) {
@@ -102,7 +102,7 @@ async function getLastActive(user) {
 	return lastActive;
 }
 
-// TODO: add an IOU ('I owe you') to the system
+// Add an IOU ('I owe you') to the system
 // The person you owe money is passed as 'creditor'
 // The amount you owe them is passed as 'amount'
 async function add_IOU(creditor, amount) {
