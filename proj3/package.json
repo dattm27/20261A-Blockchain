@@ -1,0 +1,19 @@
+{
+  "name": "blockchain-splitwise",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CS251 Project 3 - Ethereum Payment App",
+  "scripts": {
+    "compile": "hardhat compile",
+    "node": "hardhat node",
+    "deploy": "hardhat run --network localhost scripts/deploy.js",
+    "test": "hardhat test && node test/client.integration.js",
+    "test:contract": "hardhat test",
+    "test:client": "node test/client.integration.js"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "2.2.3",
+    "ethers": "5.4.0",
+    "hardhat": "2.22.18"
+  }
+}
