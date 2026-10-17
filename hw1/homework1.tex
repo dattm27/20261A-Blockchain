@@ -303,78 +303,7 @@ Vì vậy nên dùng cây nhị phân. Bằng chứng tam phân dài hơn khoả
 $1.820/1.443-1\approx26.2\%$. Việc tăng $k$ làm cây thấp đi theo $\ln k$,
 nhưng số hash anh em ở mỗi tầng lại tăng tuyến tính theo $k-1$.
 
-\problem{3}{Bitcoin Script và mật khẩu}
-
-\begin{summarybox}
-\textbf{Problem 3. Bitcoin script.}
-Alice is on a backpacking trip and is worried about her devices containing
-private keys getting stolen. She wants to store her bitcoins in such a way
-that they can be redeemed via knowledge of a password $P$. Accordingly, she
-stores them in the following ScriptPubKey address:
-\begin{center}
-\normalfont\ttfamily
-OP\_SHA256\\
-<0xeb271cbcc2340d0b0e6212903e29f22e578ff69b>\\
-OP\_EQUAL
-\end{center}
-\begin{enumerate}[label=\alph*.,leftmargin=1.5em]
-  \item Write a ScriptSig script that will successfully redeem this UTXO
-        given the password $P$. Hint: it should only be one line long.
-  \item Suppose Alice chooses a six character password $P$. Explain why her
-        bitcoins can be stolen soon after her UTXO is posted to the
-        blockchain. You may assume that computing SHA256 of all six character
-        passwords can be done in reasonable time.
-  \item Suppose Alice chooses a strong 30 character passphrase $P$. Is the
-        ScriptPubKey above a secure way to protect her bitcoins? Why or why
-        not? Hint: reason through what happens when she tries to redeem her
-        bitcoins.
-\end{enumerate}
-\end{summarybox}
-
-\solution
-
-\subsection*{Lỗi độ dài trong đề Fall 2023}
-
-\texttt{OP\_SHA256} luôn trả về digest 32 byte. Hằng
-\texttt{eb271cbcc2340d0b0e6212903e29f22e578ff69b} có 40 ký tự hex, tức 20
-byte. Hai byte-string khác độ dài không thể bằng nhau, nên script đúng nguyên
-văn là \textbf{không thể tiêu}, ngay cả khi biết mật khẩu $P$.
-
-Ý đồ của bài là một hashlock. Có thể sửa bằng cách đổi opcode thành
-\texttt{OP\_SHA1} để phù hợp với digest 20 byte, hoặc giữ
-\texttt{OP\_SHA256} và thay hằng bằng digest SHA256 32 byte của $P$. Các câu
-trả lời sau dùng phiên bản đã sửa.
-
-\subsection*{a) ScriptSig}
-
-\begin{lstlisting}[style=bitcoin]
-<P>
-\end{lstlisting}
-
-ScriptSig chỉ đẩy byte-string của mật khẩu lên stack. ScriptPubKey băm nó rồi
-so sánh với digest đã cam kết; không có public key hoặc chữ ký số.
-
-\subsection*{b) Mật khẩu sáu ký tự}
-
-Digest đã công khai trong output. Kẻ tấn công có thể duyệt ngoại tuyến toàn bộ
-không gian mật khẩu sáu ký tự, băm từng ứng viên và so sánh với digest. Khi tìm
-được $P$, họ tự tạo giao dịch tiêu UTXO về địa chỉ của mình. SHA256 được thiết
-kế để tính nhanh nên không thay thế một hàm password hashing có salt và có chi
-phí tính toán cao.
-
-\subsection*{c) Passphrase mạnh 30 ký tự}
-
-Passphrase mạnh ngăn được vét cạn trước khi Alice tiêu coin, nhưng hashlock đơn
-lẻ vẫn không an toàn:
-\begin{enumerate}[nosep]
-  \item Alice phát giao dịch; $P$ xuất hiện công khai trong ScriptSig.
-  \item Nút mạng hoặc miner đọc $P$ từ mempool.
-  \item Họ tạo giao dịch cạnh tranh dùng cùng $P$, chuyển coin về địa chỉ của
-        họ và có thể đặt phí cao hơn.
-  \item Script không có chữ ký ràng buộc người nhận hoặc nội dung giao dịch,
-        nên giao dịch thay thế cũng hợp lệ.
-\end{enumerate}
-Do đó, cần kết hợp hashlock với điều kiện chữ ký như \texttt{OP\_CHECKSIG}.
+\input{problem3-content.tex}
 
 \problem{4}{BitcoinLotto}
 
