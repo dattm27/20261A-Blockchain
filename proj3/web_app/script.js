@@ -9,7 +9,31 @@ var GENESIS = '0x000000000000000000000000000000000000000000000000000000000000000
 
 // This is the ABI for your contract (get it from Remix, in the 'Compile' tab)
 // ============================================================
-var abi = []; // FIXME: fill this in with your contract's ABI //Be sure to only have one array, not two
+var abi = [
+	{
+		"inputs": [
+			{"internalType": "address", "name": "creditor", "type": "address"},
+			{"internalType": "uint32", "name": "amount", "type": "uint32"},
+			{"internalType": "address[]", "name": "path", "type": "address[]"}
+		],
+		"name": "add_IOU",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{"internalType": "address", "name": "debtor", "type": "address"},
+			{"internalType": "address", "name": "creditor", "type": "address"}
+		],
+		"name": "lookup",
+		"outputs": [
+			{"internalType": "uint32", "name": "ret", "type": "uint32"}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
 // ============================================================
 abiDecoder.addABI(abi);
 // call abiDecoder.decodeMethod to use this - see 'getAllFunctionCalls' for more
@@ -22,31 +46,93 @@ var BlockchainSplitwise = new ethers.Contract(contractAddress, abi, provider.get
 //                            Functions To Implement
 // =============================================================================
 
-// TODO: Add any helper functions here!
+function normalizeAddress(address) {
+	return address.toLowerCase();
+}
+
+async function getFunctionCalls(functionName) {
+	return getAllFunctionCalls(contractAddress, functionName);
+}
 
 // TODO: Return a list of all users (creditors or debtors) in the system
 // All users in the system are everyone who has ever sent or received an IOU
 async function getUsers() {
+	var calls = await getFunctionCalls("add_IOU");
+	var users = new Set();
 
+	for (var i = 0; i < calls.length; i++) {
+		users.add(normalizeAddress(calls[i].from));
+		users.add(normalizeAddress(calls[i].args[0]));
+	}
+
+	return Array.from(users);
 }
 
 // TODO: Get the total amount owed by the user specified by 'user'
 async function getTotalOwed(user) {
+	var debtor = normalizeAddress(user);
+	var users = await getUsers();
+	var balances = await Promise.all(users.map(function (creditor) {
+		return BlockchainSplitwise.lookup(debtor, creditor);
+	}));
 
+	return balances.reduce(function (total, balance) {
+		return total + Number(balance.toString());
+	}, 0);
 }
 
 // TODO: Get the last time this user has sent or received an IOU, in seconds since Jan. 1, 1970
 // Return null if you can't find any activity for the user.
 // HINT: Try looking at the way 'getAllFunctionCalls' is written. You can modify it if you'd like.
 async function getLastActive(user) {
-	
+	var target = normalizeAddress(user);
+	var calls = await getFunctionCalls("add_IOU");
+	var lastActive = null;
+
+	for (var i = 0; i < calls.length; i++) {
+		var sender = normalizeAddress(calls[i].from);
+		var creditor = normalizeAddress(calls[i].args[0]);
+		if (sender === target || creditor === target) {
+			lastActive = lastActive === null
+				? calls[i].t
+				: Math.max(lastActive, calls[i].t);
+		}
+	}
+
+	return lastActive;
 }
 
 // TODO: add an IOU ('I owe you') to the system
 // The person you owe money is passed as 'creditor'
 // The amount you owe them is passed as 'amount'
 async function add_IOU(creditor, amount) {
-	
+	var creditorAddress = normalizeAddress(ethers.utils.getAddress(creditor));
+	var numericAmount = Number(amount);
+	if (!Number.isInteger(numericAmount) || numericAmount <= 0 || numericAmount > 0xffffffff) {
+		throw new Error("Amount must be a positive uint32 value");
+	}
+
+	var signer = provider.getSigner(defaultAccount);
+	var debtor = normalizeAddress(await signer.getAddress());
+	if (debtor === creditorAddress) {
+		throw new Error("A user cannot owe themselves");
+	}
+
+	var users = await getUsers();
+	async function getNeighbors(user) {
+		var balances = await Promise.all(users.map(function (candidate) {
+			return BlockchainSplitwise.lookup(user, candidate);
+		}));
+		return users.filter(function (candidate, i) {
+			return Number(balances[i].toString()) > 0;
+		});
+	}
+
+	var path = await doBFS(creditorAddress, debtor, getNeighbors);
+	var transaction = await BlockchainSplitwise
+		.connect(signer)
+		.add_IOU(creditorAddress, numericAmount, path || []);
+	return transaction.wait();
 }
 
 // =============================================================================
@@ -69,6 +155,8 @@ async function getAllFunctionCalls(addressOfContract, functionName) {
 	  	// check that destination of txn is our contract
 			if(txn.to == null){continue;}
 	  	if (txn.to.toLowerCase() === addressOfContract.toLowerCase()) {
+			var receipt = await provider.getTransactionReceipt(txn.hash);
+			if (receipt == null || receipt.status !== 1) {continue;}
 	  		var func_call = abiDecoder.decodeMethod(txn.data);
 
 				// check that the function getting called in this txn is 'functionName'
@@ -93,6 +181,7 @@ async function getAllFunctionCalls(addressOfContract, functionName) {
 // You just need to pass in a function ('getNeighbors') that takes a node (string) and returns its neighbors (as an array)
 async function doBFS(start, end, getNeighbors) {
 	var queue = [[start]];
+	var visited = new Set([normalizeAddress(start)]);
 	while (queue.length > 0) {
 		var cur = queue.shift();
 		var lastNode = cur[cur.length-1]
@@ -101,7 +190,11 @@ async function doBFS(start, end, getNeighbors) {
 		} else {
 			var neighbors = await getNeighbors(lastNode);
 			for (var i = 0; i < neighbors.length; i++) {
-				queue.push(cur.concat([neighbors[i]]));
+				var neighbor = normalizeAddress(neighbors[i]);
+				if (!visited.has(neighbor)) {
+					visited.add(neighbor);
+					queue.push(cur.concat([neighbor]));
+				}
 			}
 		}
 	}
