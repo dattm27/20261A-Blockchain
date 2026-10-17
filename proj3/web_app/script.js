@@ -38,7 +38,7 @@ var abi = [
 abiDecoder.addABI(abi);
 // call abiDecoder.decodeMethod to use this - see 'getAllFunctionCalls' for more
 
-var contractAddress = ""; // FIXME: fill this in with your contract's address/hash
+var contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 var BlockchainSplitwise = new ethers.Contract(contractAddress, abi, provider.getSigner());
 

@@ -74,5 +74,6 @@ contracts/mycontract.sol
 web_app/script.js
 ```
 
-Địa chỉ contract và ABI trong `web_app/script.js` phải được cập nhật sau mỗi lần
-deploy trước khi mở giao diện web.
+ABI đã được điền sẵn. Địa chỉ trong `web_app/script.js` là địa chỉ của lần deploy
+đầu tiên trên một Hardhat node mới. Nếu lệnh deploy in ra địa chỉ khác, cập nhật
+`contractAddress` trước khi mở giao diện web.
