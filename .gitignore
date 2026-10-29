@@ -3,3 +3,6 @@ __pycache__/
 .venv/
 *.pyc
 proj2/lib/config_secrets.py
+proj3/node_modules/
+proj3/artifacts/
+proj3/cache/

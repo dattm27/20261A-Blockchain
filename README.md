@@ -49,6 +49,11 @@ Tài liệu chi tiết cũng được lưu tại [COURSE_MATERIALS.md](COURSE_MA
 │   ├── lib/                       # Keys, configuration, and utilities
 │   ├── docs/                      # Transaction IDs and design notes
 │   └── tests/                     # Offline script tests
+├── proj3/
+│   ├── contracts/mycontract.sol  # Splitwise smart contract
+│   ├── web_app/script.js          # ethers.js client
+│   ├── scripts/deploy.js          # Local deployment script
+│   └── README.md                  # Vietnamese requirements and design
 ├── hw1/
 │   ├── README.md                  # Explained solutions for Homework 1
 │   ├── homework1.tex              # LaTeX source for the full submission PDF
@@ -65,10 +70,12 @@ Tài liệu chi tiết cũng được lưu tại [COURSE_MATERIALS.md](COURSE_MA
 
 Project 1 implements Merkle tree inclusion proofs. Project 2 builds and verifies
 Bitcoin transactions and a cross-chain atomic swap with `python-bitcoinlib`.
+Project 3 implements a decentralized Splitwise-style debt tracker on Ethereum.
 
 ## Requirements
 
 - Python 3
+- Node.js and npm for Project 3
 - Project 1 has no third-party dependencies
 - Project 2 dependencies are listed in `proj2/requirements.txt`
 
