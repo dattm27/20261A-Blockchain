@@ -1,0 +1,53 @@
+// =================== CS251 DEX Project =================== //
+//                      Tài liệu thiết kế                    //
+//                         Nhóm 12                           //
+// ========================================================= //
+
+Thành viên nhóm:
+- Trần Mạnh Đạt - 20252607M
+- Trần Hoàng Sơn - 20252606M
+- Nguyễn Đức Hoàng - 20252603M
+
+1. Giải thích tại sao việc thêm và rút thanh khoản khỏi sàn giao dịch không làm
+thay đổi tỷ giá.
+
+Sàn giao dịch yêu cầu mọi thao tác thanh khoản phải bảo toàn tỷ lệ dự trữ hiện
+tại. Nếu pool có E ETH và T token, khi thêm dE ETH thì người cung cấp phải thêm
+dT = dE*T/E token. Do đó, (T+dT)/(E+dE) = T/E. Khi rút thanh khoản, cùng một tỷ
+lệ này được áp dụng theo chiều ngược lại. Các phép tính số nguyên thực hiện phép
+nhân trước phép chia để giảm sai số làm tròn. Giới hạn tỷ giá tối thiểu và tối đa
+sẽ từ chối giao dịch nếu giá trong pool đã thay đổi sau khi client tạo yêu cầu.
+
+2. Giải thích cơ chế thưởng cho nhà cung cấp thanh khoản và lý do lựa chọn thiết
+kế. Cơ chế này đáp ứng các yêu cầu về phần thưởng thanh khoản trong Mục 7 như
+thế nào?
+
+Mỗi nhà cung cấp thanh khoản sở hữu một số lượng LP share nguyên. Khi thêm thanh
+khoản, contract tạo share theo cùng tỷ lệ với lượng ETH được thêm vào. Khi rút,
+contract hủy số share tương ứng với lượng ETH mà người dùng yêu cầu. Mỗi giao
+dịch swap thu phí 3% trên chính loại tài sản đầu vào. Chỉ phần tài sản sau khi
+trừ phí mới được đưa vào công thức tích không đổi. Phần phí được lưu riêng trong
+quỹ phí ETH hoặc token, vì vậy phí không làm thay đổi tỷ giá niêm yết hay lượng
+tài sản trả cho người giao dịch.
+
+Khi nhà cung cấp hủy s share trên tổng S share, khoản rút bao gồm s/S của cả hai
+quỹ phí hiện tại. Đây là cơ chế thưởng cơ bản được yêu cầu trong đề bài. Phần
+thưởng vẫn nằm trong sàn giao dịch cho đến khi nhà cung cấp rút thanh khoản, nên
+mỗi giao dịch swap không phải thực hiện nhiều phép chuyển tiền tốn gas. Contract
+cập nhật trạng thái trước khi chuyển tài sản ra ngoài và sử dụng ReentrancyGuard
+của OpenZeppelin để bảo vệ thao tác rút tiền khỏi tấn công tái nhập.
+
+3. Mô tả ít nhất một phương pháp đã sử dụng để giảm gas cho exchange contract.
+Tại sao phương pháp này hiệu quả?
+
+Contract chỉ lưu một số share cho mỗi nhà cung cấp trong mapping và một biến tổng
+share duy nhất. Contract không lặp qua danh sách nhà cung cấp khi swap hoặc rút
+thanh khoản, do đó chi phí giao dịch không tăng theo số lượng LP. Báo giá và giới
+hạn slippage được tính bằng các hàm view và trên trình duyệt trước khi gửi giao
+dịch; hàm thay đổi trạng thái chỉ cần kiểm tra lại giới hạn. Việc quản lý dự trữ
+và phí cũng chỉ cần một số lượng cố định các ô lưu trữ và phép ghi trong mỗi thao
+tác.
+
+4. Phản hồi tùy chọn
+
+Không có.
