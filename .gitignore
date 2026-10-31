@@ -6,3 +6,10 @@ proj2/lib/config_secrets.py
 proj3/node_modules/
 proj3/artifacts/
 proj3/cache/
+proj4/node_modules/
+proj4/artifacts/
+proj4/cache/
+proj4/typechain-types/
+proj4/coverage/
+proj4/coverage.json
+proj4/submission.zip
