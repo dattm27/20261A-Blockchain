@@ -7,6 +7,7 @@
     "test:contracts": "hardhat test",
     "test:client": "node test/client.integration.js",
     "node": "hardhat node",
+    "deploy": "npm run deploy:token && npm run deploy:exchange",
     "deploy:token": "hardhat run --network localhost scripts/deploy_token.js",
     "deploy:exchange": "hardhat run --network localhost scripts/deploy_exchange.js",
     "serve": "python3 -m http.server 8081 --bind 127.0.0.1 --directory web_app"

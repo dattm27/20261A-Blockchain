@@ -52,9 +52,15 @@ function jqueryStub() {
 async function main() {
   const projectRoot = path.resolve(__dirname, "..");
   const port = await getFreePort();
+  const hardhatExecutable = path.join(
+    projectRoot,
+    "node_modules",
+    ".bin",
+    process.platform === "win32" ? "hardhat.cmd" : "hardhat"
+  );
   const node = spawn(
-    process.platform === "win32" ? "npx.cmd" : "npx",
-    ["hardhat", "node", "--hostname", "127.0.0.1", "--port", String(port)],
+    hardhatExecutable,
+    ["node", "--hostname", "127.0.0.1", "--port", String(port)],
     { cwd: projectRoot, stdio: ["ignore", "pipe", "pipe"] }
   );
 
@@ -124,6 +130,10 @@ async function main() {
     }, "Browser client did not initialize the pool");
 
     const accounts = await provider.listAccounts();
+    const initializedSnapshot = await provider.send("evm_snapshot", []);
+    await vm.runInContext("sanityCheck()", context);
+    await provider.send("evm_revert", [initializedSnapshot]);
+
     context.defaultAccount = accounts[1];
     await context.swapETHForTokens("100", "5");
     const traderBalance = await token.balanceOf(accounts[1]);
@@ -151,6 +161,14 @@ async function main() {
     throw error;
   } finally {
     node.kill("SIGTERM");
+    await new Promise((resolve) => {
+      if (node.exitCode !== null) {
+        resolve();
+        return;
+      }
+      node.once("exit", resolve);
+      setTimeout(resolve, 2000);
+    });
   }
 }
 

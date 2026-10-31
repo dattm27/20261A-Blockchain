@@ -79,7 +79,7 @@ describe("TokenExchange core AMM", function () {
     });
 
     const [ethReserves, tokenReserves] = await exchange.getReserves();
-    expect(ethReserves).to.equal(ethers.utils.parseEther("5097"));
+    expect(ethReserves).to.equal(ethers.utils.parseEther("5100"));
     expect(await token.balanceOf(trader.address)).to.be.gt(0);
     expect(ethReserves.mul(tokenReserves)).to.be.gte(oldK);
   });
@@ -92,7 +92,7 @@ describe("TokenExchange core AMM", function () {
     await exchange.connect(trader).swapTokensForETH(100, MAX_RATE);
 
     const [ethReserves, tokenReserves] = await exchange.getReserves();
-    expect(tokenReserves).to.equal(5097);
+    expect(tokenReserves).to.equal(5100);
     expect(ethReserves).to.be.lt(INITIAL_ETH);
     expect(ethReserves.mul(tokenReserves)).to.be.gte(oldK);
   });

@@ -29,6 +29,7 @@ const exchange_address = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
 const exchange_abi = [
     'function createPool(uint256 amountTokens) payable',
     'function getReserves() view returns (uint256, uint256)',
+    'function getPricingReserves() view returns (uint256, uint256)',
     'function getSwapFee() view returns (uint256, uint256)',
     'function getExchangeRate() view returns (uint256)',
     'function quoteETHForTokens(uint256 amountETH) view returns (uint256, uint256)',
@@ -157,7 +158,7 @@ async function addLiquidity(amountEth, maxSlippagePct) {
     const signer = provider.getSigner(defaultAccount);
     const amountWei = parseEthAmount(amountEth);
     const [minRate, maxRate] = await getRateBounds(maxSlippagePct);
-    const reserves = await exchange_contract.getReserves();
+    const reserves = await exchange_contract.getPricingReserves();
     const tokenAmount = amountWei.mul(reserves[1]).div(reserves[0]);
     if (tokenAmount.isZero()) {
         throw new Error("Liquidity amount is too small");
@@ -331,7 +332,7 @@ const sanityCheck = async function() {
   var start_tokens = await token_contract.connect(provider.getSigner(defaultAccount)).balanceOf(defaultAccount);
 
   // No liquidity provider rewards implemented yet
-  if (Number(swap_fee[0]) == 0) {
+  if (Number(swap_fee[0].toString()) == 0) {
       await swapETHForTokens("100", "1");
       var state1 = await getPoolState();
       // TODO: remove this line
@@ -392,7 +393,8 @@ const sanityCheck = async function() {
 
   // LP provider rewards implemented
   else {
-      var swap_fee = swap_fee[0] / swap_fee[1];
+      var swap_fee = Number(swap_fee[0].toString()) /
+          Number(swap_fee[1].toString());
       console.log("swap fee: ", swap_fee);
 
       await swapETHForTokens("100", "1");

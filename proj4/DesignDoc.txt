@@ -1,41 +1,50 @@
-// =================== CS251 DEX Project =================== // 
+// =================== CS251 DEX Project =================== //
 //                      Design Document                      //
-//                          Names                            //
-// ========================================================= //  
+//                         Group 12                          //
+// ========================================================= //
 
-# TODO: Remove this line and add your group names above
+Team members:
+- Tran Manh Dat - 20252607M
+- Tran Hoang Son - 20252606M
+- Nguyen Duc Hoang - 20252603M
 
-1. Explain why adding and removing liquidity to your exchange does not change the exchange rate.
+1. Explain why adding and removing liquidity to your exchange does not change
+the exchange rate.
 
+The exchange requires every liquidity operation to preserve the current reserve
+ratio. If the pool contains E ETH and T tokens, adding dE ETH requires
+dT = dE*T/E tokens. Therefore (T+dT)/(E+dE) = T/E. Removal uses the same
+proportion in reverse. Integer operations multiply before dividing to minimize
+rounding, and min/max exchange-rate bounds reject an operation if the pool price
+changed after the client prepared it.
 
-# TODO: answer question 1 here
+2. Explain your scheme for rewarding liquidity providers and justify the design
+decisions you made. How does it satisfy the liquidity rewards requirements in
+Section 7?
 
+Each provider owns integer LP shares. Adding liquidity mints shares in the same
+proportion as the ETH being added; withdrawing burns the shares required for the
+requested ETH amount. Swaps charge the provided 3% fee only in the input asset.
+The net input participates in the constant-product calculation, while the fee is
+stored in a separate ETH or token fee reserve, so it cannot change the quoted
+price or the amount returned to the trader.
 
-2. Explain your scheme for rewarding liquidity providers and justify the design decisions you made. How does it satisfy the liquidity rewards requirements outlined in Section 7?
+When a provider burns s shares out of S total shares, the withdrawal includes
+s/S of both current fee reserves. This is the basic reward design requested by
+the handout. Rewards remain inside the exchange until withdrawal, so swaps do not
+perform expensive transfers to every LP. Checks-effects-interactions ordering and
+OpenZeppelin ReentrancyGuard protect the withdrawal transfers.
 
+3. Describe at least one method you used to minimize your exchange contract's
+gas usage. Why was this method effective?
 
-# TODO: answer question 2 here
+The contract stores one share count per provider in a mapping and a single
+total-shares value. It never loops over providers during swaps or withdrawals,
+so transaction cost does not grow with the number of LPs. Quotes and slippage
+bounds are computed through view calls and in the browser before submission;
+the state-changing function only verifies the bound. Reserve and fee accounting
+also uses a constant number of storage slots and writes per operation.
 
+4. Optional feedback
 
-3. Describe at least one method you used to minimize your exchange contract's gas usage. Why was this method effective?
-
-
-# TODO: answer question 3 here
-
-
-4. Optional Feedback:
-4a. How much time did you spend on the assignment?
-
-# TODO: answer question 4(a) here
-
-4b. What is one thing that would have been useful to know before starting the assignment?
-
-# TODO: answer question 4(b) here
-
-4c. If you could change one with about this assignment, what would you change?
-
-# TODO: answer question 4(c) here
-
-4d. Please feel free to include any other feedback you may have below.
-
-# TODO: answer question 4(d) here
+Not provided.

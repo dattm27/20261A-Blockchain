@@ -92,6 +92,13 @@ contract TokenExchange is Ownable, ReentrancyGuard {
     }
 
     function getReserves() public view returns (uint256, uint256) {
+        return (
+            eth_reserves + eth_fee_reserves,
+            token_reserves + token_fee_reserves
+        );
+    }
+
+    function getPricingReserves() public view returns (uint256, uint256) {
         return (eth_reserves, token_reserves);
     }
 

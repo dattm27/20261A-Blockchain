@@ -39,8 +39,10 @@ describe("TokenExchange fees and slippage", function () {
     });
 
     const [ethReserves] = await exchange.getReserves();
+    const [pricingEthReserves] = await exchange.getPricingReserves();
     const [ethFees, tokenFees] = await exchange.getFeeReserves();
-    expect(ethReserves).to.equal(ethers.utils.parseEther("5097"));
+    expect(ethReserves).to.equal(ethers.utils.parseEther("5100"));
+    expect(pricingEthReserves).to.equal(ethers.utils.parseEther("5097"));
     expect(ethFees).to.equal(ethers.utils.parseEther("3"));
     expect(tokenFees).to.equal(0);
     expect(await token.balanceOf(trader.address)).to.equal(quotedTokens);
@@ -54,8 +56,10 @@ describe("TokenExchange fees and slippage", function () {
     await exchange.connect(trader).swapTokensForETH(100, maxRate);
 
     const [, tokenReserves] = await exchange.getReserves();
+    const [, pricingTokenReserves] = await exchange.getPricingReserves();
     const [ethFees, tokenFees] = await exchange.getFeeReserves();
-    expect(tokenReserves).to.equal(5097);
+    expect(tokenReserves).to.equal(5100);
+    expect(pricingTokenReserves).to.equal(5097);
     expect(ethFees).to.equal(0);
     expect(tokenFees).to.equal(3);
   });
