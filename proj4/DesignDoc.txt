@@ -1,0 +1,50 @@
+// =================== CS251 DEX Project =================== //
+//                      Design Document                      //
+//                         Group 12                          //
+// ========================================================= //
+
+Team members:
+- Tran Manh Dat - 20252607M
+- Tran Hoang Son - 20252606M
+- Nguyen Duc Hoang - 20252603M
+
+1. Explain why adding and removing liquidity to your exchange does not change
+the exchange rate.
+
+The exchange requires every liquidity operation to preserve the current reserve
+ratio. If the pool contains E ETH and T tokens, adding dE ETH requires
+dT = dE*T/E tokens. Therefore (T+dT)/(E+dE) = T/E. Removal uses the same
+proportion in reverse. Integer operations multiply before dividing to minimize
+rounding, and min/max exchange-rate bounds reject an operation if the pool price
+changed after the client prepared it.
+
+2. Explain your scheme for rewarding liquidity providers and justify the design
+decisions you made. How does it satisfy the liquidity rewards requirements in
+Section 7?
+
+Each provider owns integer LP shares. Adding liquidity mints shares in the same
+proportion as the ETH being added; withdrawing burns the shares required for the
+requested ETH amount. Swaps charge the provided 3% fee only in the input asset.
+The net input participates in the constant-product calculation, while the fee is
+stored in a separate ETH or token fee reserve, so it cannot change the quoted
+price or the amount returned to the trader.
+
+When a provider burns s shares out of S total shares, the withdrawal includes
+s/S of both current fee reserves. This is the basic reward design requested by
+the handout. Rewards remain inside the exchange until withdrawal, so swaps do not
+perform expensive transfers to every LP. Checks-effects-interactions ordering and
+OpenZeppelin ReentrancyGuard protect the withdrawal transfers.
+
+3. Describe at least one method you used to minimize your exchange contract's
+gas usage. Why was this method effective?
+
+The contract stores one share count per provider in a mapping and a single
+total-shares value. It never loops over providers during swaps or withdrawals,
+so transaction cost does not grow with the number of LPs. Quotes and slippage
+bounds are computed through view calls and in the browser before submission;
+the state-changing function only verifies the bound. Reserve and fee accounting
+also uses a constant number of storage slots and writes per operation.
+
+4. Optional feedback
+
+Not provided.
