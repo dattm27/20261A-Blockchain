@@ -7,11 +7,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  
 // Your token contract
 contract Token is Ownable, ERC20 {
-    string private constant _symbol = '';                 // TODO: Give your token a symbol (all caps!)
-    string private constant _name = '';                 // TODO: Give your token a name
-
-    // TODO: add private members as needed!
-    // TODO: if you create private member, initialize it in the constructor
+    string private constant _symbol = 'R2R';
+    string private constant _name = 'R2R Token';
+    bool private mintingEnabled = true;
     
     constructor() ERC20(_name, _symbol) {}
 
@@ -26,8 +24,9 @@ contract Token is Ownable, ERC20 {
         public 
         onlyOwner
     {
-        /******* TODO: Implement this function *******/
-
+        require(mintingEnabled, "Minting is disabled");
+        require(amount > 0, "Mint amount must be positive");
+        _mint(msg.sender, amount);
     }
 
     // Function disable_mint: Disable future minting of your token.
@@ -37,7 +36,6 @@ contract Token is Ownable, ERC20 {
         public
         onlyOwner
     {
-        /******* TODO: Implement this function *******/
-
+        mintingEnabled = false;
     }
 }
