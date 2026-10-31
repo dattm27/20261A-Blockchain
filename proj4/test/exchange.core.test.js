@@ -4,6 +4,8 @@ const { ethers, network } = require("hardhat");
 describe("TokenExchange core AMM", function () {
   const INITIAL_TOKENS = 5000;
   const INITIAL_ETH = ethers.utils.parseEther("5000");
+  const MIN_RATE = 0;
+  const MAX_RATE = ethers.constants.MaxUint256;
 
   let owner;
   let lp;
@@ -39,7 +41,7 @@ describe("TokenExchange core AMM", function () {
   it("adds proportional liquidity without moving the rate", async function () {
     await token.transfer(lp.address, 100);
     await token.connect(lp).approve(exchange.address, 100);
-    await exchange.connect(lp).addLiquidity({
+    await exchange.connect(lp).addLiquidity(MIN_RATE, MAX_RATE, {
       value: ethers.utils.parseEther("100"),
     });
 
@@ -53,18 +55,18 @@ describe("TokenExchange core AMM", function () {
   it("removes some or all of an LP position", async function () {
     await token.transfer(lp.address, 100);
     await token.connect(lp).approve(exchange.address, 100);
-    await exchange.connect(lp).addLiquidity({
+    await exchange.connect(lp).addLiquidity(MIN_RATE, MAX_RATE, {
       value: ethers.utils.parseEther("100"),
     });
 
     await exchange
       .connect(lp)
-      .removeLiquidity(ethers.utils.parseEther("40"));
+      .removeLiquidity(ethers.utils.parseEther("40"), MIN_RATE, MAX_RATE);
     let [ethReserves, tokenReserves] = await exchange.getReserves();
     expect(ethReserves).to.equal(ethers.utils.parseEther("5060"));
     expect(tokenReserves).to.equal(5060);
 
-    await exchange.connect(lp).removeAllLiquidity();
+    await exchange.connect(lp).removeAllLiquidity(MIN_RATE, MAX_RATE);
     [ethReserves, tokenReserves] = await exchange.getReserves();
     expect(ethReserves).to.equal(INITIAL_ETH);
     expect(tokenReserves).to.equal(INITIAL_TOKENS);
@@ -72,12 +74,12 @@ describe("TokenExchange core AMM", function () {
 
   it("swaps ETH for tokens on the constant-product curve", async function () {
     const oldK = INITIAL_ETH.mul(INITIAL_TOKENS);
-    await exchange.connect(trader).swapETHForTokens({
+    await exchange.connect(trader).swapETHForTokens(MAX_RATE, {
       value: ethers.utils.parseEther("100"),
     });
 
     const [ethReserves, tokenReserves] = await exchange.getReserves();
-    expect(ethReserves).to.equal(ethers.utils.parseEther("5100"));
+    expect(ethReserves).to.equal(ethers.utils.parseEther("5097"));
     expect(await token.balanceOf(trader.address)).to.be.gt(0);
     expect(ethReserves.mul(tokenReserves)).to.be.gte(oldK);
   });
@@ -87,21 +89,25 @@ describe("TokenExchange core AMM", function () {
     await token.connect(trader).approve(exchange.address, 100);
 
     const oldK = INITIAL_ETH.mul(INITIAL_TOKENS);
-    await exchange.connect(trader).swapTokensForETH(100);
+    await exchange.connect(trader).swapTokensForETH(100, MAX_RATE);
 
     const [ethReserves, tokenReserves] = await exchange.getReserves();
-    expect(tokenReserves).to.equal(5100);
+    expect(tokenReserves).to.equal(5097);
     expect(ethReserves).to.be.lt(INITIAL_ETH);
     expect(ethReserves.mul(tokenReserves)).to.be.gte(oldK);
   });
 
   it("rejects invalid liquidity and swap requests", async function () {
-    await expect(exchange.connect(lp).addLiquidity({ value: 0 })).to.be.reverted;
-    await expect(exchange.connect(lp).removeAllLiquidity()).to.be.revertedWith(
-      "No liquidity to remove"
-    );
-    await expect(exchange.connect(trader).swapETHForTokens({ value: 0 })).to.be
+    await expect(
+      exchange.connect(lp).addLiquidity(MIN_RATE, MAX_RATE, { value: 0 })
+    ).to.be.reverted;
+    await expect(
+      exchange.connect(lp).removeAllLiquidity(MIN_RATE, MAX_RATE)
+    ).to.be.revertedWith("No liquidity to remove");
+    await expect(
+      exchange.connect(trader).swapETHForTokens(MAX_RATE, { value: 0 })
+    ).to.be.reverted;
+    await expect(exchange.connect(trader).swapTokensForETH(1, MAX_RATE)).to.be
       .reverted;
-    await expect(exchange.connect(trader).swapTokensForETH(1)).to.be.reverted;
   });
 });
