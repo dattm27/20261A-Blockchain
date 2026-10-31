@@ -3,10 +3,10 @@
 // ========================================================= //                  
 
 // Set up Ethers.js
-const provider = new ethers.providers.JsonRpcProvider("http://localhost:8545");
+const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545");
 var defaultAccount;
 
-const exchange_name = '';             // TODO: fill in the name of your exchange
+const exchange_name = 'R2R DEX';
 
 const token_name = 'R2R Token';
 const token_symbol = 'R2R';
@@ -16,15 +16,32 @@ const token_symbol = 'R2R';
 //                          ABIs: Paste Your ABIs Here
 // =============================================================================
 
-// TODO: Paste your token contract address and ABI here: 
-const token_address = '';      
-const token_abi = [];             
+const token_address = '0x5FbDB2315678afecb367f032d93F642f64180aa3';
+const token_abi = [
+    'function mint(uint256 amount)',
+    'function disable_mint()',
+    'function approve(address spender, uint256 amount) returns (bool)',
+    'function balanceOf(address account) view returns (uint256)'
+];
 const token_contract = new ethers.Contract(token_address, token_abi, provider.getSigner());
 
-// TODO: Paste your exchange contract address and ABI here: 
-const exchange_address = '';
-const exchange_abi = [];           
+const exchange_address = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512';
+const exchange_abi = [
+    'function createPool(uint256 amountTokens) payable',
+    'function getReserves() view returns (uint256, uint256)',
+    'function getSwapFee() view returns (uint256, uint256)',
+    'function getExchangeRate() view returns (uint256)',
+    'function quoteETHForTokens(uint256 amountETH) view returns (uint256, uint256)',
+    'function quoteTokensForETH(uint256 amountTokens) view returns (uint256, uint256)',
+    'function addLiquidity(uint256 minExchangeRate, uint256 maxExchangeRate) payable',
+    'function removeLiquidity(uint256 amountETH, uint256 minExchangeRate, uint256 maxExchangeRate)',
+    'function removeAllLiquidity(uint256 minExchangeRate, uint256 maxExchangeRate)',
+    'function swapTokensForETH(uint256 amountTokens, uint256 maxExchangeRate)',
+    'function swapETHForTokens(uint256 maxExchangeRate) payable'
+];
 const exchange_contract = new ethers.Contract(exchange_address, exchange_abi, provider.getSigner());
+
+const PERCENT_DENOMINATOR = ethers.BigNumber.from(100);
 
 
 
@@ -46,12 +63,15 @@ async function init() {
       // total_supply is 10^5 which we represent as 10**5
       // Note a 10**5 off
       const total_supply = 100000;
-      await token_contract.connect(provider.getSigner(defaultAccount)).mint(total_supply / 2);
-		  await token_contract.connect(provider.getSigner(defaultAccount)).mint(total_supply / 2);
-		  await token_contract.connect(provider.getSigner(defaultAccount)).disable_mint();
-      await token_contract.connect(provider.getSigner(defaultAccount)).approve(exchange_address, total_supply);
+      const signer = provider.getSigner(defaultAccount);
+      await waitForTransaction(token_contract.connect(signer).mint(total_supply / 2));
+      await waitForTransaction(token_contract.connect(signer).mint(total_supply / 2));
+      await waitForTransaction(token_contract.connect(signer).disable_mint());
+      await waitForTransaction(token_contract.connect(signer).approve(exchange_address, total_supply));
       // initialize pool with equal amounts of ETH and tokens, so exchange rate begins as 1:1
-      await exchange_contract.connect(provider.getSigner(defaultAccount)).createPool(5000, { value: ethers.utils.parseEther("5000")});
+      await waitForTransaction(exchange_contract.connect(signer).createPool(5000, {
+          value: ethers.utils.parseEther("5000")
+      }));
       console.log("init finished");
 
        // All accounts start with 0 of your tokens. Thus, be sure to swap before adding liquidity.
@@ -60,18 +80,69 @@ async function init() {
 
 async function getPoolState() {
     // read pool balance for each type of liquidity:
-    let accounts = await provider.listAccounts()
+    let accounts = await provider.listAccounts();
     let poolReserves = await exchange_contract.connect(provider.getSigner(accounts[0])).getReserves();
     // Convert WEI to ETH for UI
     let liquidity_eth = Number(ethers.utils.formatEther(poolReserves[0]));
-    let liquidity_tokens = Number(poolReserves[1])
-    print
+    let liquidity_tokens = Number(poolReserves[1].toString());
     return {
         token_liquidity: liquidity_tokens,
         eth_liquidity: liquidity_eth,
         token_eth_rate: liquidity_tokens / liquidity_eth,
         eth_token_rate: liquidity_eth / liquidity_tokens,
     };
+}
+
+async function waitForTransaction(transactionPromise) {
+    const transaction = await transactionPromise;
+    return transaction.wait();
+}
+
+function parseSlippage(maxSlippagePct) {
+    const slippage = Number(maxSlippagePct);
+    if (!Number.isInteger(slippage) || slippage < 0 || slippage > 100) {
+        throw new Error("Slippage must be an integer from 0 to 100");
+    }
+    return ethers.BigNumber.from(slippage);
+}
+
+function parseTokenAmount(amountToken) {
+    const value = String(amountToken).trim();
+    if (!/^\d+$/.test(value)) {
+        throw new Error("Token amount must be a positive integer");
+    }
+    const amount = ethers.BigNumber.from(value);
+    if (amount.isZero()) {
+        throw new Error("Token amount must be positive");
+    }
+    return amount;
+}
+
+function parseEthAmount(amountEth) {
+    const amount = ethers.utils.parseEther(String(amountEth).trim());
+    if (amount.isZero()) {
+        throw new Error("ETH amount must be positive");
+    }
+    return amount;
+}
+
+async function getRateBounds(maxSlippagePct) {
+    const slippage = parseSlippage(maxSlippagePct);
+    const rate = await exchange_contract.getExchangeRate();
+    const minRate = rate.mul(PERCENT_DENOMINATOR.sub(slippage)).div(PERCENT_DENOMINATOR);
+    const maxRate = rate
+        .mul(PERCENT_DENOMINATOR.add(slippage))
+        .add(PERCENT_DENOMINATOR.sub(1))
+        .div(PERCENT_DENOMINATOR);
+    return [minRate, maxRate];
+}
+
+function quoteRateWithSlippage(quotedRate, maxSlippagePct) {
+    const slippage = parseSlippage(maxSlippagePct);
+    return quotedRate
+        .mul(PERCENT_DENOMINATOR.add(slippage))
+        .add(PERCENT_DENOMINATOR.sub(1))
+        .div(PERCENT_DENOMINATOR);
 }
 
 // ============================================================
@@ -83,25 +154,71 @@ async function getPoolState() {
 
 /*** ADD LIQUIDITY ***/
 async function addLiquidity(amountEth, maxSlippagePct) {
-    /** TODO: ADD YOUR CODE HERE **/
+    const signer = provider.getSigner(defaultAccount);
+    const amountWei = parseEthAmount(amountEth);
+    const [minRate, maxRate] = await getRateBounds(maxSlippagePct);
+    const reserves = await exchange_contract.getReserves();
+    const tokenAmount = amountWei.mul(reserves[1]).div(reserves[0]);
+    if (tokenAmount.isZero()) {
+        throw new Error("Liquidity amount is too small");
+    }
+
+    await waitForTransaction(
+        token_contract.connect(signer).approve(exchange_address, tokenAmount)
+    );
+    return waitForTransaction(
+        exchange_contract.connect(signer).addLiquidity(minRate, maxRate, {
+            value: amountWei
+        })
+    );
 }
 
 /*** REMOVE LIQUIDITY ***/
 async function removeLiquidity(amountEth, maxSlippagePct) {
-    /** TODO: ADD YOUR CODE HERE **/
+    const amountWei = parseEthAmount(amountEth);
+    const [minRate, maxRate] = await getRateBounds(maxSlippagePct);
+    return waitForTransaction(
+        exchange_contract
+            .connect(provider.getSigner(defaultAccount))
+            .removeLiquidity(amountWei, minRate, maxRate)
+    );
 }
 
 async function removeAllLiquidity(maxSlippagePct) {
-    /** TODO: ADD YOUR CODE HERE **/
+    const [minRate, maxRate] = await getRateBounds(maxSlippagePct);
+    return waitForTransaction(
+        exchange_contract
+            .connect(provider.getSigner(defaultAccount))
+            .removeAllLiquidity(minRate, maxRate)
+    );
 }
 
 /*** SWAP ***/
 async function swapTokensForETH(amountToken, maxSlippagePct) {
-    /** TODO: ADD YOUR CODE HERE **/
+    const signer = provider.getSigner(defaultAccount);
+    const amount = parseTokenAmount(amountToken);
+    const quote = await exchange_contract.quoteTokensForETH(amount);
+    const maxRate = quoteRateWithSlippage(quote[1], maxSlippagePct);
+
+    await waitForTransaction(
+        token_contract.connect(signer).approve(exchange_address, amount)
+    );
+    return waitForTransaction(
+        exchange_contract.connect(signer).swapTokensForETH(amount, maxRate)
+    );
 }
 
 async function swapETHForTokens(amountEth, maxSlippagePct) {
-    /** TODO: ADD YOUR CODE HERE **/
+    const signer = provider.getSigner(defaultAccount);
+    const amountWei = parseEthAmount(amountEth);
+    const quote = await exchange_contract.quoteETHForTokens(amountWei);
+    const maxRate = quoteRateWithSlippage(quote[1], maxSlippagePct);
+
+    return waitForTransaction(
+        exchange_contract.connect(signer).swapETHForTokens(maxRate, {
+            value: amountWei
+        })
+    );
 }
 
 // =============================================================================
@@ -343,9 +460,5 @@ const sanityCheck = async function() {
 
 }
 
-// Sleep 3s to ensure init() finishes before sanityCheck() runs on first load.
-// If you run into sanityCheck() errors due to init() not finishing, please extend the sleep time.
-
-setTimeout(function () {
-  sanityCheck();
-}, 10000);
+// Run sanityCheck() manually from the browser console after init() completes.
+// It is intentionally not automatic because it mutates the pool substantially.

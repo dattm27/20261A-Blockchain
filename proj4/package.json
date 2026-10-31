@@ -1,5 +1,16 @@
 {
   "name": "hardhat-project",
+  "private": true,
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test && node test/client.integration.js",
+    "test:contracts": "hardhat test",
+    "test:client": "node test/client.integration.js",
+    "node": "hardhat node",
+    "deploy:token": "hardhat run --network localhost scripts/deploy_token.js",
+    "deploy:exchange": "hardhat run --network localhost scripts/deploy_exchange.js",
+    "serve": "python3 -m http.server 8081 --bind 127.0.0.1 --directory web_app"
+  },
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
